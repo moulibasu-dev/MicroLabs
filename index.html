@@ -36,5 +36,13 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
+
+    <!-- 
+      FIX: Added the entry point script tag.
+      Without this tag, the browser does not know to load and execute index.tsx,
+      resulting in a blank page since the React application never mounts.
+      The type="module" attribute is required for native ES module support.
+    -->
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
