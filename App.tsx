@@ -1,12 +1,59 @@
 
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Presentation, Award, Target, MessageSquare, PieChart, Smartphone, Zap } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
 import { SlideView } from './components/SlideView';
 import { ProposalView } from './components/ProposalView';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'presentation' | 'proposal'>('presentation');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const slideViewRef = useRef<HTMLDivElement>(null);
+  const proposalViewRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPdf = async () => {
+    const targetRef = view === 'presentation' ? slideViewRef : proposalViewRef;
+    const filename = view === 'presentation' 
+      ? `MicroLabs_Showcase_Slide_${currentSlide + 1}.pdf` 
+      : 'MicroLabs_Strategy_Proposal.pdf';
+
+    if (!targetRef.current) {
+      console.error("Target element for PDF generation not found.");
+      return;
+    }
+
+    setIsGeneratingPdf(true);
+
+    try {
+      const canvas = await html2canvas(targetRef.current, {
+        useCORS: true,
+        scale: 2, // Higher scale for better quality
+        backgroundColor: '#1e293b', // Match component background
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'l' : 'p',
+        unit: 'px',
+        format: [imgWidth, imgHeight],
+        hotfixes: ['px_scaling'],
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(filename);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white overflow-hidden flex flex-col">
@@ -31,20 +78,30 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <nav className="flex space-x-2 bg-black/20 p-1 rounded-full border border-white/10">
-          <button 
-            onClick={() => setView('presentation')}
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${view === 'presentation' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+        <div className="flex items-center gap-4">
+          <nav className="flex space-x-2 bg-black/20 p-1 rounded-full border border-white/10">
+            <button 
+              onClick={() => setView('presentation')}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${view === 'presentation' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+            >
+              Portfolio Showcase
+            </button>
+            <button 
+              onClick={() => setView('proposal')}
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${view === 'proposal' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+            >
+              Micro Labs Strategy
+            </button>
+          </nav>
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className="p-2.5 rounded-full bg-black/20 border border-white/10 text-slate-400 hover:text-white transition-all disabled:opacity-50 disabled:cursor-wait"
+            aria-label="Download as PDF"
           >
-            Portfolio Showcase
+            {isGeneratingPdf ? <Loader2 className="animate-spin" size={18}/> : <Download size={18}/>}
           </button>
-          <button 
-            onClick={() => setView('proposal')}
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${view === 'proposal' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-          >
-            Micro Labs Strategy
-          </button>
-        </nav>
+        </div>
 
         <div className="hidden md:block">
            <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">L&D Strategic Unit</span>
@@ -54,9 +111,9 @@ const App: React.FC = () => {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-auto">
         {view === 'presentation' ? (
-          <SlideView currentSlide={currentSlide} onSlideChange={setCurrentSlide} />
+          <SlideView ref={slideViewRef} currentSlide={currentSlide} onSlideChange={setCurrentSlide} />
         ) : (
-          <ProposalView />
+          <ProposalView ref={proposalViewRef} />
         )}
       </main>
 

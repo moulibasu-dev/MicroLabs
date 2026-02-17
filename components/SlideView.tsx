@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ChevronLeft, ChevronRight, Zap, Award, Target, MessageSquare, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
+import React, { forwardRef } from 'react';
+import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 
 interface SlideViewProps {
   currentSlide: number;
@@ -61,7 +61,7 @@ const slides = [
   }
 ];
 
-export const SlideView: React.FC<SlideViewProps> = ({ currentSlide, onSlideChange }) => {
+export const SlideView = forwardRef<HTMLDivElement, SlideViewProps>(({ currentSlide, onSlideChange }, ref) => {
   const next = () => onSlideChange(Math.min(slides.length - 1, currentSlide + 1));
   const prev = () => onSlideChange(Math.max(0, currentSlide - 1));
 
@@ -86,7 +86,7 @@ export const SlideView: React.FC<SlideViewProps> = ({ currentSlide, onSlideChang
       </div>
 
       {/* Slide Content Container */}
-      <div className="w-full max-w-6xl min-h-[500px] bg-[#1e293b] rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative flex flex-col md:flex-row">
+      <div ref={ref} className="w-full max-w-6xl min-h-[500px] bg-[#1e293b] rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative flex flex-col md:flex-row">
         
         {slide.type === 'title' ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-12 bg-gradient-to-br from-blue-900/40 to-black/40">
@@ -156,4 +156,4 @@ export const SlideView: React.FC<SlideViewProps> = ({ currentSlide, onSlideChang
       </div>
     </div>
   );
-};
+});

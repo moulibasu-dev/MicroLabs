@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
-import { Target, PieChart, Award, ExternalLink } from 'lucide-react';
+import React, { useState, forwardRef } from 'react';
+import { Target, PieChart, Award } from 'lucide-react';
 
-export const ProposalView: React.FC = () => {
+export const ProposalView = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'strategy' | 'creative' | 'comms'>('overview');
 
   const visualDirectionItems = [
@@ -25,7 +25,7 @@ export const ProposalView: React.FC = () => {
   ];
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
+    <div ref={ref} className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
       {/* Hero Header */}
       <section className="text-center space-y-4 py-8">
         <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter">Micro Labs: Incentivize360</h2>
@@ -182,7 +182,7 @@ export const ProposalView: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 // Simple SVG icon to simulate the plane in the creative
 const PlaneIcon = ({ className }: { className?: string }) => (
